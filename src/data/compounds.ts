@@ -1,0 +1,60 @@
+import type { Compound, Geometry } from '../models';
+import { atomsOf, molarMassOf, parseFormula } from '../engine/formula-parser';
+
+interface Raw { formula: string; name: string; state: string; description: string; geometry?: Geometry; ions?: [string, string] }
+
+const RAW: Raw[] = [
+  { formula: 'H2O', name: 'Water', state: 'Liquid', geometry: { center: 'O', shape: 'bent', angle: 104.5 },
+    description: 'Water is a chemical compound of hydrogen and oxygen. It is essential for life and exists in all three states of matter (solid, liquid, and gas).' },
+  { formula: 'CO2', name: 'Carbon Dioxide', state: 'Gas', geometry: { center: 'C', shape: 'linear', bondOrder: 2 },
+    description: 'Carbon dioxide is a colourless gas produced by combustion and respiration. Plants absorb it during photosynthesis.' },
+  { formula: 'NaCl', name: 'Sodium Chloride', state: 'Solid', geometry: { center: 'Na', shape: 'linear' },
+    description: 'Sodium chloride is common table salt. It is an ionic solid; the model shows a single Na–Cl ion pair rather than the full crystal lattice.' },
+  { formula: 'NH3', name: 'Ammonia', state: 'Gas', geometry: { center: 'N', shape: 'pyramidal' },
+    description: 'Ammonia is a pungent gas used to make fertiliser. Its molecules are pyramidal, with a lone pair of electrons on nitrogen.' },
+  { formula: 'CH4', name: 'Methane', state: 'Gas', geometry: { center: 'C', shape: 'tetrahedral' },
+    description: 'Methane is the simplest hydrocarbon and the main component of natural gas.' },
+  { formula: 'CaO', name: 'Calcium Oxide', state: 'Solid', geometry: { center: 'Ca', shape: 'linear' },
+    description: 'Calcium oxide (quicklime) is an ionic solid used in cement and steelmaking. It reacts vigorously with water.' },
+  { formula: 'CaCl2', name: 'Calcium Chloride', state: 'Solid', geometry: { center: 'Ca', shape: 'linear' },
+    description: 'Calcium chloride is an ionic salt that absorbs moisture readily and is used for de-icing roads.' },
+  { formula: 'HCl', name: 'Hydrochloric Acid', state: 'Gas', geometry: { center: 'H', shape: 'linear' },
+    description: 'Hydrogen chloride is a gas; dissolved in water it forms hydrochloric acid, a strong acid.' },
+  { formula: 'NO2', name: 'Nitrogen Dioxide', state: 'Gas', geometry: { center: 'N', shape: 'bent', angle: 134, bondOrder: 1.5 },
+    description: 'Nitrogen dioxide is a reddish-brown toxic gas and a common air pollutant.' },
+  { formula: 'NaOH', name: 'Sodium Hydroxide', state: 'Solid', ions: ['Na:1', 'OH'],
+    description: 'Sodium hydroxide (caustic soda) is a strong base used in soap making and chemical manufacturing.' },
+  { formula: 'H2SO4', name: 'Sulfuric Acid', state: 'Liquid',
+    description: 'Sulfuric acid is a dense, strongly acidic liquid and one of the most widely produced industrial chemicals.' },
+  { formula: 'H2O2', name: 'Hydrogen Peroxide', state: 'Liquid', description: 'Hydrogen peroxide is a pale blue liquid used as a bleach and disinfectant. It slowly breaks down into water and oxygen.' },
+  { formula: 'CO', name: 'Carbon Monoxide', state: 'Gas', geometry: { center: 'C', shape: 'linear', bondOrder: 3 }, description: 'Carbon monoxide is a toxic, odourless gas made when carbon burns with too little oxygen.' },
+  { formula: 'SO2', name: 'Sulfur Dioxide', state: 'Gas', geometry: { center: 'S', shape: 'bent', angle: 119, bondOrder: 1.5 }, description: 'Sulfur dioxide is a sharp-smelling gas released by burning sulfur and a cause of acid rain.' },
+  { formula: 'H2S', name: 'Hydrogen Sulfide', state: 'Gas', geometry: { center: 'S', shape: 'bent', angle: 92 }, description: 'Hydrogen sulfide is a toxic gas that smells of rotten eggs.' },
+  { formula: 'HF', name: 'Hydrogen Fluoride', state: 'Gas', geometry: { center: 'H', shape: 'linear' }, description: 'Hydrogen fluoride is a highly corrosive gas that dissolves in water to form hydrofluoric acid.' },
+  { formula: 'KCl', name: 'Potassium Chloride', state: 'Solid', geometry: { center: 'K', shape: 'linear' }, description: 'Potassium chloride is an ionic salt used in fertiliser and as a salt substitute.' },
+  { formula: 'LiF', name: 'Lithium Fluoride', state: 'Solid', geometry: { center: 'Li', shape: 'linear' }, description: 'Lithium fluoride is an ionic solid used in optics and as a flux in ceramics.' },
+  { formula: 'MgO', name: 'Magnesium Oxide', state: 'Solid', geometry: { center: 'Mg', shape: 'linear' }, description: 'Magnesium oxide is a white ionic solid formed when magnesium burns with a brilliant white flame.' },
+  { formula: 'MgCl2', name: 'Magnesium Chloride', state: 'Solid', geometry: { center: 'Mg', shape: 'linear' }, description: 'Magnesium chloride is an ionic salt found in seawater and used for de-icing.' },
+  { formula: 'AlCl3', name: 'Aluminium Chloride', state: 'Solid', description: 'Aluminium chloride is a reactive solid widely used as a catalyst in organic chemistry.' },
+  { formula: 'Al2O3', name: 'Aluminium Oxide', state: 'Solid', description: 'Aluminium oxide (alumina) is a hard ionic solid; it forms the protective skin on aluminium and is the main component of rubies and sapphires.' },
+  { formula: 'Fe2O3', name: 'Iron(III) Oxide', state: 'Solid', description: 'Iron(III) oxide is the main component of rust.' },
+  { formula: 'FeCl3', name: 'Iron(III) Chloride', state: 'Solid', description: 'Iron(III) chloride is a dark solid used in water treatment and circuit-board etching.' },
+  { formula: 'ZnO', name: 'Zinc Oxide', state: 'Solid', description: 'Zinc oxide is a white powder used in sunscreen and ointments.' },
+  { formula: 'CuO', name: 'Copper(II) Oxide', state: 'Solid', description: 'Copper(II) oxide is a black solid formed when copper is heated in air.' },
+  { formula: 'KOH', name: 'Potassium Hydroxide', state: 'Solid', ions: ['K:1', 'OH'], description: 'Potassium hydroxide is a strong base used in soap and alkaline batteries.' },
+  { formula: 'Ca(OH)2', name: 'Calcium Hydroxide', state: 'Solid', ions: ['Ca:2', 'OH'], description: 'Calcium hydroxide (slaked lime) is a base used in mortar and to treat soil and water.' },
+  { formula: 'Na2SO4', name: 'Sodium Sulfate', state: 'Solid', ions: ['Na:1', 'SO4'], description: 'Sodium sulfate is a white salt used in detergents and glass making.' },
+  { formula: 'MgSO4', name: 'Magnesium Sulfate', state: 'Solid', ions: ['Mg:2', 'SO4'], description: 'Magnesium sulfate is known as Epsom salt when hydrated.' },
+  { formula: 'CuSO4', name: 'Copper(II) Sulfate', state: 'Solid', ions: ['Cu:2', 'SO4'], description: 'Copper(II) sulfate forms bright blue crystals when hydrated and is used as a fungicide.' },
+  { formula: 'CaCO3', name: 'Calcium Carbonate', state: 'Solid', ions: ['Ca:2', 'CO3'], description: 'Calcium carbonate is the main component of limestone, marble, chalk and seashells.' },
+  { formula: 'Na2CO3', name: 'Sodium Carbonate', state: 'Solid', ions: ['Na:1', 'CO3'], description: 'Sodium carbonate (soda ash) is used in glass making and as a water softener.' },
+  { formula: 'NaHCO3', name: 'Sodium Bicarbonate', state: 'Solid', ions: ['Na:1', 'HCO3'], description: 'Sodium bicarbonate (baking soda) is a mild base used in baking and cleaning.' },
+  { formula: 'KNO3', name: 'Potassium Nitrate', state: 'Solid', ions: ['K:1', 'NO3'], description: 'Potassium nitrate (saltpetre) is used in fertiliser and gunpowder.' },
+  { formula: 'NH4Cl', name: 'Ammonium Chloride', state: 'Solid', ions: ['NH4', 'Cl:-1'], description: 'Ammonium chloride is a white salt used in dry-cell batteries and fertiliser.' },
+  { formula: 'HNO3', name: 'Nitric Acid', state: 'Liquid', description: 'Nitric acid is a strong, corrosive acid used to make fertiliser and explosives.' },
+];
+
+export const COMPOUNDS: Compound[] = RAW.map((r) => ({
+  ...r, type: 'Compound', atoms: atomsOf(parseFormula(r.formula)), molarMass: molarMassOf(parseFormula(r.formula)),
+}));
+export const COMPOUND_BY_FORMULA: Record<string, Compound> = Object.fromEntries(COMPOUNDS.map((c) => [c.formula, c]));

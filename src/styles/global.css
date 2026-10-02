@@ -1,0 +1,15 @@
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 15px; line-height: 1.5; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .45; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+h1 { font-size: 28px; margin: 0; font-weight: 600; }
+h2 { font-size: 17px; font-weight: 600; margin: 28px 0 14px; }
+h2 small { color: var(--muted); font-weight: 400; font-size: 13px; }
+sub, sub { vertical-align: baseline; position: relative; top: .3em; font-size: .7em; line-height: 0; }
+.sub, .muted { color: var(--muted); margin: 4px 0 0; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.empty { color: var(--muted); border: 1px dashed var(--line-2); border-radius: var(--radius); padding: 18px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
