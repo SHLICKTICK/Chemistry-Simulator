@@ -85,13 +85,13 @@
 
 /* periodic table */
 .pt-scroll { overflow-x: auto; margin-top: 20px; padding-bottom: 8px; }
-.pt-grid { display: grid; grid-template-columns: repeat(18, 64px); grid-auto-rows: 78px; gap: 6px; min-width: max-content; }
+.pt-grid { display: grid; grid-template-columns: repeat(18, 64px); grid-template-rows: repeat(7, 78px) 18px repeat(2, 78px); gap: 6px; min-width: max-content; }
 .pt-cell { display: grid; align-content: center; justify-items: center; gap: 0; padding: 4px; background: var(--panel); border: 1px solid var(--line-2); border-bottom: 3px solid var(--cat, var(--line-2)); border-radius: 10px; }
 .pt-cell b { font-size: 18px; } .pt-cell span { font-size: 10px; color: var(--muted); } .pt-cell small { font-size: 9px; color: var(--muted); }
 .pt-cell:hover { border-color: var(--blue); } .pt-cell.dim { opacity: .25; }
 .pt-cell.is-selected { outline: 2px solid var(--blue); outline-offset: -2px; background: #12214a; }
 .cat-alkali { --cat: #f97316; } .cat-alkaline { --cat: #eab308; } .cat-transition { --cat: #3b82f6; } .cat-post-transition { --cat: #14b8a6; }
-.cat-metalloid { --cat: #a78bfa; } .cat-nonmetal { --cat: #34d399; } .cat-halogen { --cat: #ef4444; } .cat-noble { --cat: #ec4899; }
+.cat-metalloid { --cat: #a78bfa; } .cat-nonmetal { --cat: #34d399; } .cat-halogen { --cat: #ef4444; } .cat-noble { --cat: #c084fc; }
 .detail { display: flex; gap: 24px; margin-top: 24px; padding: 20px; border: 1px solid var(--accent); border-radius: var(--radius); background: var(--panel); }
 .detail h2 { margin: 0 0 10px; } .detail dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 20px; margin: 0; }
 .detail dt { color: var(--muted); } .detail dd { margin: 0; } .tile.big { width: 96px; height: 96px; font-size: 38px; flex: none; }
@@ -152,3 +152,28 @@
 .toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 20; display: flex; align-items: center; gap: 14px;
   padding: 10px 14px 10px 18px; background: var(--panel-2); border: 1px solid var(--blue); border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, .5); }
 .toast .combine.small { margin-top: 0; height: 34px; }
+
+.cat-lanthanide { --cat: #38bdf8; } .cat-actinide { --cat: #f472b6; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; list-style: none; margin: 16px 0 0; padding: 0; font-size: 12px; color: var(--muted); }
+.legend li { display: flex; align-items: center; gap: 6px; }
+.legend i { width: 12px; height: 12px; border-radius: 3px; background: var(--cat); }
+
+/* atomic structure */
+.structure { margin-top: 16px; padding: 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+.structure h3 { margin: 0 0 14px; font-size: 17px; } .structure h3 small { color: var(--muted); font-weight: 400; font-size: 13px; margin-left: 8px; }
+.struct-body { display: flex; gap: 28px; flex-wrap: wrap; align-items: center; }
+.bohr-fig { margin: 0; display: grid; justify-items: center; gap: 8px; }
+.bohr { width: 280px; max-width: 100%; }
+.ring { fill: none; stroke: var(--line-2); stroke-width: 1; }
+.nucleus { fill: #7f1d2d; stroke: #ef4444; stroke-width: 1.5; } .nuc-text { fill: #fff; font-size: 11px; font-weight: 600; }
+.e, .e-val { fill: #60a5fa; } .e-val { fill: #fbbf24; }
+.bohr-fig figcaption { display: flex; gap: 16px; font-size: 12px; color: var(--muted); }
+.key { display: flex; align-items: center; gap: 6px; } .key i { width: 10px; height: 10px; border-radius: 50%; background: #60a5fa; } .key i.e-val { background: #fbbf24; }
+.struct-info { flex: 1; min-width: 240px; }
+.particles { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 0 0 16px; padding: 0; }
+.particles li { display: grid; gap: 2px; padding: 12px; border: 1px solid var(--line-2); border-radius: 12px; border-top: 3px solid var(--k); }
+.particles b { font-size: 26px; line-height: 1.1; } .particles span { font-size: 12px; color: var(--muted); }
+.particles .p { --k: #ef4444; } .particles .n { --k: #94a3b8; } .particles .e { --k: #60a5fa; }
+.struct-info dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 18px; margin: 0 0 10px; } .struct-info dt { color: var(--muted); } .struct-info dd { margin: 0; }
+.config sup { position: relative; top: -.35em; font-size: .7em; line-height: 0; }
+.struct-info .note { margin: 6px 0 0; font-size: 13px; color: var(--muted); }

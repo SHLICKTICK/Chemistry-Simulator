@@ -91,7 +91,10 @@ document.addEventListener('click', (ev) => {
   switch (t.dataset.action) {
     case 'nav': ev.preventDefault(); setState({ activeView: t.dataset.view as View }); break;
     case 'toggle': case 'add': toggle(sym); break;
-    case 'inspect': setState({ inspected: sym }); break;
+    case 'inspect':
+      setState({ inspected: sym });
+      document.querySelector('.detail')?.scrollIntoView({ block: 'nearest', behavior: reduceMotion() ? 'auto' : 'smooth' });
+      break;
     case 'qty': setState({ currentResult: null, selectedElements: s.selectedElements.map((r) => (r.element === sym ? { ...r, quantity: clamp(r.quantity + Number(t.dataset.delta)) } : r)) }); break;
     case 'preset': setState({ activeView: 'simulation', currentResult: null, selectedElements: Object.entries(PRESETS[Number(t.dataset.index)].reactants).map(([element, quantity]) => ({ element, quantity })) }); break;
     case 'combine': runCombine(); break;

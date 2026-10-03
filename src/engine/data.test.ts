@@ -11,7 +11,7 @@ describe('database integrity', () => {
   it('elements: unique numbers, symbols and table positions', () => {
     expect(new Set(ELEMENTS.map((e) => e.atomicNumber)).size).toBe(ELEMENTS.length);
     expect(new Set(ELEMENTS.map((e) => e.symbol)).size).toBe(ELEMENTS.length);
-    expect(new Set(ELEMENTS.map((e) => `${e.period}:${e.group}`)).size).toBe(ELEMENTS.length);
+    expect(new Set(ELEMENTS.map((e) => `${e.row}:${e.col}`)).size).toBe(ELEMENTS.length);
   });
   it('compounds: unique formulas, parseable, positive molar mass', () => {
     expect(new Set(COMPOUNDS.map((c) => c.formula)).size).toBe(COMPOUNDS.length);
@@ -57,4 +57,37 @@ describe('new chemistry', () => {
     expect(r.basis).toBe('known-compound');
   });
   it('burns carbon to CO with limited oxygen', () => expect(combine({ C: 1, O: 1 }).formula).toBe('CO'));
+});
+
+describe('all 118 elements', () => {
+  it('covers atomic numbers 1–118 in order', () => {
+    expect(ELEMENTS).toHaveLength(118);
+    ELEMENTS.forEach((e, i) => expect(e.atomicNumber).toBe(i + 1));
+  });
+  it('has sane valence electrons by family', () => {
+    for (const e of ELEMENTS) {
+      if (e.category === 'alkali') expect(e.valenceElectrons, e.symbol).toBe(1);
+      if (e.category === 'alkaline') expect(e.valenceElectrons, e.symbol).toBe(2);
+      if (e.category === 'halogen') expect(e.valenceElectrons, e.symbol).toBe(7);
+      if (e.category === 'noble') expect(e.valenceElectrons, e.symbol).toBe(e.symbol === 'He' ? 2 : 8);
+    }
+  });
+  it('places the f-block below the main table and every element on the grid', () => {
+    const by = Object.fromEntries(ELEMENTS.map((e) => [e.symbol, e]));
+    expect([by.Ce.row, by.Ce.col, by.Lu.col, by.Th.row, by.Lr.col]).toEqual([9, 3, 16, 10, 16]);
+    expect([by.La.row, by.La.col, by.Ac.row, by.Og.row, by.Og.col]).toEqual([6, 3, 7, 7, 18]);
+    ELEMENTS.forEach((e) => { expect(e.row).toBeGreaterThanOrEqual(1); expect(e.col).toBeGreaterThanOrEqual(1); expect(e.col).toBeLessThanOrEqual(18); });
+  });
+  it('keeps engine-critical oxidation-state ordering', () => {
+    const by = Object.fromEntries(ELEMENTS.map((e) => [e.symbol, e]));
+    expect(by.Cl.commonOxidationStates[0]).toBe(-1); // anion
+    expect(by.Na.commonOxidationStates[0]).toBe(1); // cation
+    expect(by.H.commonOxidationStates[0]).toBe(1);
+    expect(by.Og.commonOxidationStates).toEqual([0]);
+  });
+  it('lets the engine handle elements with unknown chemistry without crashing', () => {
+    const r = combine({ Og: 1, Fl: 1 });
+    expect(r.success).toBe(false);
+  });
+  it('can still combine newly added elements', () => expect(combine({ Ba: 1, Cl: 2 }).success).toBe(false)); // not in database → honest failure
 });

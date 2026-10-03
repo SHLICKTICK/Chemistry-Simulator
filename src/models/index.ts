@@ -1,11 +1,13 @@
-export type Category = 'nonmetal' | 'noble' | 'alkali' | 'alkaline' | 'metalloid' | 'halogen' | 'post-transition' | 'transition';
+export type Category = 'nonmetal' | 'noble' | 'alkali' | 'alkaline' | 'metalloid' | 'halogen' | 'post-transition' | 'transition' | 'lanthanide' | 'actinide';
 
 export interface Element {
   atomicNumber: number; symbol: string; name: string; atomicMass: number;
   category: Category; valenceElectrons: number;
   /** Ordered: the first entry is the most common state. */
   commonOxidationStates: number[];
-  period: number; group: number;
+  period: number; group: number | null; // group is null for the f-block (Ce–Lu, Th–Lr)
+  /** Position in the periodic-table grid (f-block rows sit below the main table). */
+  row: number; col: number;
 }
 
 export interface Reactant { element: string; quantity: number }

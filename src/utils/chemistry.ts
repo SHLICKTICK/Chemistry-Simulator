@@ -2,7 +2,7 @@ import { ELEMENT_BY_SYMBOL } from '../data/elements';
 import type { Category } from '../models';
 
 export const isMetal = (sym: string): boolean =>
-  (['alkali', 'alkaline', 'transition', 'post-transition'] as Category[]).includes(ELEMENT_BY_SYMBOL[sym].category);
+  (['alkali', 'alkaline', 'transition', 'post-transition', 'lanthanide', 'actinide'] as Category[]).includes(ELEMENT_BY_SYMBOL[sym].category);
 
 const DIATOMIC = new Set(['H', 'N', 'O', 'F', 'Cl', 'Br', 'I']);
 /** Standard elemental form at room conditions (H → H2, Na → Na). */
