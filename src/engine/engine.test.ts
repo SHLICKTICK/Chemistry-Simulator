@@ -32,8 +32,7 @@ describe('combine()', () => {
     const wrong = combine({ H: 1, O: 3 });
     expect(wrong.success).toBe(false);
     expect(wrong.suggestions?.[0]).toContain('H2O');
-    expect(combine({ C: 1, O: 3 }).suggestions?.join()).toContain('Carbon Dioxide');
-    expect(combine({ C: 1, O: 3 }).suggestions?.join()).toContain('Carbon Monoxide');
+    expect(wrong.suggestions?.join()).toContain('Hydrogen Peroxide');
     expect(combine({ H: 1 }).success).toBe(false);
     expect(combine({}).success).toBe(false);
   });
@@ -90,7 +89,7 @@ describe('reaction conditions', () => {
   it('blocks a recorded reaction when conditions are too mild', () => {
     const r = combine(haber, { temperature: 25, pressure: 1 });
     expect(r.success).toBe(false);
-    expect(r.recognisedEquation).toBe('N2 + 3H2 → 2NH3');
+    expect(r.recognisedEquation).toBe('N2 + 3H2 ⇌ 2NH3');
     expect(r.suggestions).toHaveLength(3); // temperature, pressure, catalyst
   });
   it('allows it when every requirement is met', () =>

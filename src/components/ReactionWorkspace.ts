@@ -26,9 +26,11 @@ export function renderWorkspace(s: AppState): string {
   <h2>1. Choose Elements</h2>
   <div class="el-row">${shown.map((sym) => renderElementCard(ELEMENT_BY_SYMBOL[sym], picked.includes(sym))).join('')}
     <button class="el-more" data-action="nav" data-view="periodic">All elements</button></div>
-  <h2>2. Set Quantity <small>(number of atoms)</small></h2>
+  <div class="qty-title"><h2>2. Set Quantity</h2>
+    <div class="seg" role="group" aria-label="Amount unit">${(['atoms', 'mol', 'g'] as const).map((u) =>
+      `<button type="button" class="seg-btn" data-action="unit" data-unit="${u}" aria-pressed="${s.amountUnit === u}">${{ atoms: 'Atoms', mol: 'Moles', g: 'Grams' }[u]}</button>`).join('')}</div></div>
   ${s.selectedElements.length
-    ? `<div class="qty-grid">${s.selectedElements.map((r) => renderQuantity(ELEMENT_BY_SYMBOL[r.element], r.quantity)).join('')}</div>`
+    ? `<div class="qty-grid">${s.selectedElements.map((r) => renderQuantity(ELEMENT_BY_SYMBOL[r.element], r.quantity, s.amountUnit)).join('')}</div>`
     : '<p class="empty">Pick an element above, or start from a preset below.</p>'}
   ${renderConditions(s)}
   <div class="actions">

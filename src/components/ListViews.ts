@@ -25,7 +25,8 @@ export function renderLibrary(s: AppState): string {
 
 export function renderHistory(s: AppState): string {
   const rows = s.history.map((h) => {
-    const inputs = Object.entries(h.reactants).map(([e, n]) => `${e} × ${n}`).join(' + ');
+    const suffix = h.unit === 'mol' ? ' mol' : h.unit === 'g' ? ' g' : '';
+    const inputs = Object.entries(h.reactants).map(([e, n]) => `${e} × ${n}${suffix}`).join(' + ');
     const cond = h.conditions
       ? `${h.conditions.temperature} °C, ${h.conditions.pressure} atm${h.conditions.catalyst ? `, ${h.conditions.catalyst}` : ''}` : 'recommended conditions';
     return `<li class="hist"><span><b>${escapeHtml(inputs)}</b> → ${h.success ? `<b>${formatFormula(escapeHtml(h.formula ?? ''))}</b> ${escapeHtml(h.name ?? '')}` : '<span class="bad-text">no compound formed</span>'}

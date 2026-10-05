@@ -33,10 +33,25 @@ export interface ReactionConditions {
 }
 /** Minimum conditions for a recorded reaction to proceed (educational threshold model). */
 export interface ReactionRequirements { minTemperature?: number; minPressure?: number; catalyst?: string }
+export interface Hazard { level: 'caution' | 'danger'; note: string }
 export interface Reaction {
   reactants: Record<string, number>; products: Record<string, number>;
   conditions?: ReactionConditions; requirements?: ReactionRequirements;
+  /** What you would see, hear or smell (qualitative, simplified). */
+  observations?: string[]; hazard?: Hazard;
+  /** Reaction only partly converts (equilibrium), shown with ⇌. */
+  reversible?: boolean;
 }
+export interface ReactionEnthalpy {
+  /** kJ for the equation as written (negative = heat released). */
+  total: number; perMoleProduct: number;
+  /** kJ for the amounts you entered (mol/g modes only; negative = heat released). */
+  forAmount?: number;
+  kind: 'exothermic' | 'endothermic' | 'thermoneutral';
+}
+export type AmountUnit = 'atoms' | 'mol' | 'g';
+/** count = atoms (atoms mode) or moles of atoms (mol/g modes); grams only in mol/g modes. */
+export interface Leftover { symbol: string; name: string; count: number; grams?: number }
 
 export interface Atom { element: string; position: { x: number; y: number; z: number } }
 export interface Bond { from: number; to: number; order: number }
@@ -54,12 +69,16 @@ export interface ReactionResult {
   error?: string; suggestions?: string[]; predictedFormula?: string;
   /** Set when a reaction was recognised but the chosen conditions were insufficient. */
   recognisedEquation?: string;
+  /** How many product molecules/formula units your atoms make, and what is left over. */
+  amount?: number; continuous?: boolean; productGrams?: number; leftovers?: Leftover[]; limiting?: { symbol: string; name: string };
+  enthalpy?: ReactionEnthalpy; observations?: string[]; hazard?: Hazard; reversible?: boolean;
 }
 
 /** One run of the engine, stored with its inputs so it can be re-run deterministically. */
 export interface ExperimentRecord {
   id?: number; timestamp: number;
-  reactants: Record<string, number>;
+  /** Amounts exactly as entered, in `unit` (older records have no unit = atoms). */
+  reactants: Record<string, number>; unit?: AmountUnit;
   /** null = recommended conditions were used. */
   conditions: ReactionConditions | null;
   success: boolean; formula?: string; name?: string; equation?: string;

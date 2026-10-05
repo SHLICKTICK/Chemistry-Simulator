@@ -52,10 +52,10 @@ export function balance(reactants: string[], products: string[]): number[] | nul
   return out.map((x) => x / g);
 }
 
-/** Format "2H2 + O2 → 2H2O" (coefficient 1 omitted). */
-export function formatEquation(reactants: string[], products: string[], coefs: number[]): string {
+/** Format "2H2 + O2 → 2H2O" (coefficient 1 omitted); ⇌ for reversible reactions. */
+export function formatEquation(reactants: string[], products: string[], coefs: number[], reversible = false): string {
   const side = (fs: string[], offset: number) => fs.map((f, i) => `${coefs[offset + i] === 1 ? '' : coefs[offset + i]}${f}`).join(' + ');
-  return `${side(reactants, 0)} → ${side(products, reactants.length)}`;
+  return `${side(reactants, 0)} ${reversible ? '⇌' : '→'} ${side(products, reactants.length)}`;
 }
 
 export function isBalanced(reactants: Record<string, number>, products: Record<string, number>): boolean {

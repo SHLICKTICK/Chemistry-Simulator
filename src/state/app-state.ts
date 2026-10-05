@@ -1,4 +1,4 @@
-import type { ExperimentRecord, Molecule, Preferences, Reactant, ReactionConditions, ReactionResult } from '../models';
+import type { AmountUnit, ExperimentRecord, Molecule, Preferences, Reactant, ReactionConditions, ReactionResult } from '../models';
 
 export type View = 'simulation' | 'periodic' | 'reactions' | 'library' | 'history' | 'settings';
 
@@ -18,11 +18,13 @@ export interface AppState {
   /** Formulas of saved compounds. */
   saved: string[];
   prefs: Preferences;
+  /** Unit the quantity inputs are in. */
+  amountUnit: AmountUnit;
 }
 
 let state: AppState = { selectedElements: [], currentResult: null, activeView: 'simulation', searchQuery: '', inspected: null, reacting: false,
   conditions: { temperature: 25, pressure: 1 }, idealConditions: true, animationTarget: null,
-  history: [], saved: [], prefs: { animations: true, saveHistory: true } };
+  history: [], saved: [], prefs: { animations: true, saveHistory: true }, amountUnit: 'atoms' };
 const listeners = new Set<() => void>();
 
 export const getState = (): AppState => state;

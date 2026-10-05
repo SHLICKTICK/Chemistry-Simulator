@@ -16,10 +16,10 @@ import { renderResult } from './components/ReactionResult';
 import { renderWorkspace } from './components/ReactionWorkspace';
 import { renderSidebar } from './components/Sidebar';
 import { getState, setState, subscribe, toRecord, type View } from './state/app-state';
-import { MAX_QUANTITY } from './utils/validation';
+import { convertAmount, toAtomMoles } from './engine/amounts';
+import { UNIT_LIMITS, clampAmount } from './utils/validation';
 
 const $ = (id: string) => document.getElementById(id)!;
-const clamp = (n: number) => Math.min(MAX_QUANTITY, Math.max(1, Math.round(n) || 1));
 const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 let lastResult: unknown = Symbol();
@@ -63,7 +63,7 @@ function toggle(sym: string): void {
 
 async function record(rec: ExperimentRecord): Promise<void> {
   const last = getState().history[0];
-  const key = (r: ExperimentRecord) => JSON.stringify([r.reactants, r.conditions, r.formula]);
+  const key = (r: ExperimentRecord) => JSON.stringify([r.reactants, r.unit, r.conditions, r.formula]);
   if (last && key(last) === key(rec)) return; // don't log identical back-to-back runs
   await addExperiment(rec);
   setState({ history: await listExperiments() });
@@ -71,16 +71,19 @@ async function record(rec: ExperimentRecord): Promise<void> {
 
 function runCombine(): void {
   const s = getState();
-  const input = toRecord(s.selectedElements);
+  const input = toRecord(s.selectedElements); // as entered, in s.amountUnit (kept for the history)
   const conditions = s.idealConditions ? null : { ...s.conditions };
-  const result = combine(input, conditions);
+  const continuous = s.amountUnit !== 'atoms';
+  // mol/g amounts go to the engine as moles of atoms; atom counts stay whole numbers.
+  const engineInput = Object.fromEntries(s.selectedElements.map((r) => [r.element, toAtomMoles(r.element, r.quantity, s.amountUnit)]));
+  const result = combine(engineInput, conditions, { continuous });
   const animate = s.prefs.animations && !reduceMotion();
   setState({ reacting: true, currentResult: null, animationTarget: animate && result.success ? (result.molecule ?? null) : null });
   // Short, subtle sequence: atoms gather and bond, then the engine's answer appears.
   setTimeout(() => {
     setState({ reacting: false, animationTarget: null, currentResult: result });
     if (getState().prefs.saveHistory)
-      void record({ timestamp: Date.now(), reactants: input, conditions, success: result.success, formula: result.formula, name: result.name, equation: result.equation ?? result.recognisedEquation });
+      void record({ timestamp: Date.now(), reactants: input, unit: s.amountUnit, conditions, success: result.success, formula: result.formula, name: result.name, equation: result.equation ?? result.recognisedEquation });
   }, animate ? 1100 : 0);
 }
 
@@ -95,8 +98,15 @@ document.addEventListener('click', (ev) => {
       setState({ inspected: sym });
       document.querySelector('.detail')?.scrollIntoView({ block: 'nearest', behavior: reduceMotion() ? 'auto' : 'smooth' });
       break;
-    case 'qty': setState({ currentResult: null, selectedElements: s.selectedElements.map((r) => (r.element === sym ? { ...r, quantity: clamp(r.quantity + Number(t.dataset.delta)) } : r)) }); break;
-    case 'preset': setState({ activeView: 'simulation', currentResult: null, selectedElements: Object.entries(PRESETS[Number(t.dataset.index)].reactants).map(([element, quantity]) => ({ element, quantity })) }); break;
+    case 'qty': setState({ currentResult: null, selectedElements: s.selectedElements.map((r) => (r.element === sym ? { ...r, quantity: clampAmount(s.amountUnit, r.quantity + Number(t.dataset.delta) * UNIT_LIMITS[s.amountUnit].step) } : r)) }); break;
+    case 'preset': setState({ activeView: 'simulation', currentResult: null, selectedElements: Object.entries(PRESETS[Number(t.dataset.index)].reactants).map(([element, atoms]) => ({ element, quantity: clampAmount(s.amountUnit, convertAmount(element, atoms, 'atoms', s.amountUnit)) })) }); break; // presets are stoichiometric, in whatever unit is active
+    case 'unit': {
+      const unit = t.dataset.unit as 'atoms' | 'mol' | 'g';
+      // Keep the same physical amounts when switching units (e.g. 2 atoms H → 2.016 g H).
+      setState({ amountUnit: unit, currentResult: null,
+        selectedElements: s.selectedElements.map((r) => ({ ...r, quantity: clampAmount(unit, convertAmount(r.element, r.quantity, s.amountUnit, unit)) })) });
+      break;
+    }
     case 'combine': runCombine(); break;
     case 'reset-view': resetView(); break;
     case 'save': {
@@ -108,7 +118,7 @@ document.addEventListener('click', (ev) => {
     case 'rerun': {
       const h = s.history.find((x) => x.id === Number(t.dataset.id));
       if (!h) break;
-      setState({ activeView: 'simulation', currentResult: null, idealConditions: h.conditions === null, conditions: h.conditions ?? s.conditions,
+      setState({ activeView: 'simulation', currentResult: null, amountUnit: h.unit ?? 'atoms', idealConditions: h.conditions === null, conditions: h.conditions ?? s.conditions,
         selectedElements: Object.entries(h.reactants).map(([element, quantity]) => ({ element, quantity })) });
       runCombine();
       break;
@@ -137,7 +147,7 @@ document.addEventListener('change', (ev) => {
   }
   if ('condCatalyst' in el.dataset) return setState({ conditions: { ...s.conditions, catalyst: el.value || undefined }, currentResult: null });
   if (!sym) return;
-  const q = clamp(Number(el.value));
+  const q = clampAmount(s.amountUnit, Number(el.value));
   setState({ currentResult: null, selectedElements: getState().selectedElements.map((r) => (r.element === sym ? { ...r, quantity: q } : r)) });
 });
 

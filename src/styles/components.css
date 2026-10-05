@@ -177,3 +177,22 @@
 .struct-info dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 18px; margin: 0 0 10px; } .struct-info dt { color: var(--muted); } .struct-info dd { margin: 0; }
 .config sup { position: relative; top: -.35em; font-size: .7em; line-height: 0; }
 .struct-info .note { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
+
+/* lab notes */
+.amounts { margin: 10px 0 0; padding: 10px 14px; border: 1px solid var(--line-2); border-radius: 10px; font-size: 14px; background: rgba(59, 130, 246, .08); }
+.hazard { margin: 10px 0 0; padding: 10px 14px; border-radius: 10px; font-size: 14px; border: 1px solid; }
+.hazard.caution { color: #fcd34d; border-color: #92741f; background: rgba(251, 191, 36, .08); }
+.hazard.danger { color: #fca5a5; border-color: #9b2c2c; background: rgba(239, 68, 68, .1); }
+.heat { margin: 0 0 10px; } .heat.exothermic b { color: #fb923c; } .heat.endothermic b { color: #7dd3fc; }
+.obs { margin: 0 0 10px; padding-left: 20px; color: #b9c3dc; font-size: 14px; } .obs li { margin: 3px 0; }
+.tiny { font-size: 12px; margin: 8px 0 0; }
+
+/* amount units */
+.qty-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 28px 0 14px; }
+.qty-title h2 { margin: 0; }
+.seg { display: inline-flex; border: 1px solid var(--line-2); border-radius: 10px; overflow: hidden; }
+.seg-btn { background: var(--panel); border: 0; padding: 6px 16px; font-size: 13px; color: var(--muted); }
+.seg-btn + .seg-btn { border-left: 1px solid var(--line-2); }
+.seg-btn[aria-pressed="true"] { background: #12214a; color: var(--blue); }
+.qty-unit { margin-left: auto; font-size: 12px; color: var(--muted); }
+.qty-note { margin: 10px 0 0; font-size: 12px; color: var(--muted); }

@@ -51,10 +51,20 @@ describe('new chemistry', () => {
     expect(r.formula).toBe('Ca(OH)2');
     expect(r.explanation?.join(' ')).toContain('hydroxide');
   });
-  it('treats an unrecorded composition ratio as a compound match, not a reaction', () => {
-    const r = combine({ H: 1, O: 1 });
-    expect(r.formula).toBe('H2O2');
+  it('treats an unrecorded composition as a compound match, not a reaction', () => {
+    const r = combine({ Na: 1, O: 1, H: 1 });
+    expect(r.formula).toBe('NaOH');
     expect(r.basis).toBe('known-compound');
+  });
+  it('prefers a recorded reaction over a bare compound match', () => {
+    const r = combine({ H: 2, O: 2 }); // could be H2O2, but water is the recorded product
+    expect(r.formula).toBe('H2O');
+    expect(r.leftovers).toEqual([{ symbol: 'O', name: 'Oxygen', count: 1 }]);
+  });
+  it('needs enough atoms for one complete molecule', () => {
+    const r = combine({ H: 1, O: 1 });
+    expect(r.success).toBe(false);
+    expect(r.suggestions?.join()).toContain('Hydrogen Peroxide');
   });
   it('burns carbon to CO with limited oxygen', () => expect(combine({ C: 1, O: 1 }).formula).toBe('CO'));
 });
