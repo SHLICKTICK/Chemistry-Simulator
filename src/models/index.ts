@@ -71,6 +71,9 @@ export interface ReactionResult {
   recognisedEquation?: string;
   /** How many product molecules/formula units your atoms make, and what is left over. */
   amount?: number; continuous?: boolean; productGrams?: number; leftovers?: Leftover[]; limiting?: { symbol: string; name: string };
+  /** State at the temperature in effect (only when it differs from 25 °C), and the starting elements' states at that temperature. */
+  stateAtConditions?: { temperature: number; state: string; note?: string };
+  reactantStates?: { symbol: string; name: string; state: string }[]; temperature?: number;
   enthalpy?: ReactionEnthalpy; observations?: string[]; hazard?: Hazard; reversible?: boolean;
 }
 
@@ -85,3 +88,8 @@ export interface ExperimentRecord {
 }
 export interface SavedCompound { formula: string; name: string; savedAt: number }
 export interface Preferences { animations: boolean; saveHistory: boolean }
+
+/** Melting/boiling points in °C at 1 atm, plus flags for compounds that decompose or sublime rather than melt. */
+export interface PhaseData { mp: number | null; bp: number | null; decomposesAt?: number; sublimesAt?: number; note?: string }
+export type PhaseState = 'Solid' | 'Liquid' | 'Gas' | 'Decomposes';
+export interface PhaseInfo { state: PhaseState; note?: string }

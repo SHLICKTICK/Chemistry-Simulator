@@ -17,6 +17,7 @@ import { explainFormation, predictBinary } from './compound-builder';
 import { unmetRequirements } from './conditions';
 import { balance, formatEquation } from './equation-balancer';
 import { parseFormula } from './formula-parser';
+import { compoundStateAt, elementStateAt } from './phase';
 import { buildMolecule } from './molecule-builder';
 import { reactionEnthalpy } from './thermo';
 
@@ -26,6 +27,22 @@ function compositionOf(c: Compound): AtomComposition[] {
   return c.atoms
     .map((a) => ({ symbol: a.symbol, name: ELEMENT_BY_SYMBOL[a.symbol].name, count: a.count, mass: Number((ELEMENT_BY_SYMBOL[a.symbol].atomicMass * a.count).toFixed(3)) }))
     .sort((a, b) => b.mass - a.mass);
+}
+
+/** States at the temperature in effect. Only reported as a separate line when it differs from the 25 °C standard state. */
+function stateInfo(c: Compound, input: Record<string, number>, t: number, pressure: number): Partial<ReactionResult> {
+  const out: Partial<ReactionResult> = { temperature: t };
+  const reactantStates = Object.keys(input).flatMap((symbol) => {
+    const st = elementStateAt(symbol, t);
+    return st ? [{ symbol, name: ELEMENT_BY_SYMBOL[symbol].name, state: st.state }] : [];
+  });
+  if (reactantStates.length) out.reactantStates = reactantStates;
+  const now = compoundStateAt(c.formula, t);
+  if (now && Math.abs(t - 25) > 0.5) {
+    const note = [now.note, pressure < 0.5 || pressure > 1.5 ? 'Melting and boiling points are for 1 atm; pressure is not modelled.' : undefined].filter(Boolean).join(' ');
+    out.stateAtConditions = { temperature: t, state: now.state, ...(note ? { note } : {}) };
+  }
+  return out;
 }
 
 function fromCompound(c: Compound, basis: ReactionResult['basis'], extra: Partial<ReactionResult>): ReactionResult {
@@ -91,6 +108,8 @@ export function combine(input: Record<string, number>, conditions?: ReactionCond
   }
 
   const { compound, reaction, made, leftover, leftoverTotal, need } = best;
+  const temperature = conditions ? conditions.temperature : (reaction?.conditions?.temperature ?? 25);
+  const states = stateInfo(compound, input, temperature, conditions?.pressure ?? reaction?.conditions?.pressure ?? 1);
   const extra: Partial<ReactionResult> = {
     amount: made,
     leftovers: Object.entries(leftover).filter(([, n]) => n > 0).map(([symbol, count]) => ({
@@ -115,13 +134,13 @@ export function combine(input: Record<string, number>, conditions?: ReactionCond
           description: 'This is a simplified threshold model. Real reactions also depend on activation energy, reaction rate and equilibrium.',
         });
       return fromCompound(compound, 'known-reaction', {
-        ...extra, equation, conditions: reaction.conditions, enthalpy: scaledEnthalpy(reactionEnthalpy(re, pr, coefs), continuous ? made : undefined),
+        ...extra, ...states, equation, conditions: reaction.conditions, enthalpy: scaledEnthalpy(reactionEnthalpy(re, pr, coefs), continuous ? made : undefined),
         observations: reaction.observations, hazard: reaction.hazard, reversible: reaction.reversible,
       });
     }
   }
   return fromCompound(compound, 'known-compound', {
-    ...extra,
+    ...extra, ...states,
     description: `${compound.description}\n\nChemSim matched these atoms to a known compound but has no recorded reaction for making it directly from these elements.`,
   });
 }

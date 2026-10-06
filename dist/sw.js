@@ -1,6 +1,6 @@
 /* ChemSim service worker — generated at build time (see vite.config.ts). */
-const CACHE = 'chemsim-2647f807a1';
-const PRECACHE = ["/","/index.html","/assets/OrbitControls-Dh36RsEH.js","/assets/index-BDyP0APG.js","/assets/index-DiQqxSfI.css","/assets/three.module-4gI5Z-_B.js","/manifest.webmanifest","/icons/favicon.svg","/icons/icon-192.png","/icons/icon-512.png","/icons/maskable-512.png","/icons/apple-touch-icon.png"];
+const CACHE = 'chemsim-846685b7a4';
+const PRECACHE = ["/","/index.html","/assets/OrbitControls-Dh36RsEH.js","/assets/index-DTLA3R8d.js","/assets/index-DiQqxSfI.css","/assets/three.module-4gI5Z-_B.js","/manifest.webmanifest","/icons/favicon.svg","/icons/icon-192.png","/icons/icon-512.png","/icons/maskable-512.png","/icons/apple-touch-icon.png"];
 
 self.addEventListener('install', (event) => {
   // New workers wait until the user accepts the "new version" prompt (SKIP_WAITING message).

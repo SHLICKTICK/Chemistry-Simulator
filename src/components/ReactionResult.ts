@@ -28,8 +28,9 @@ export function renderResult(s: AppState): string {
   return `${head}<p class="status ok"><span aria-hidden="true">✓</span> Compound Formed!</p>
   <div class="formula-row">
     <div><div class="formula">${formatFormula(r.formula!)}</div><div class="cname">${r.name}</div></div>
-    <dl class="facts"><dt>Molar Mass</dt><dd>${formatMass(r.molarMass!)}</dd><dt>Type</dt><dd>${r.type}</dd><dt>State (at 25°C)</dt><dd>${r.state}</dd></dl>
+    <dl class="facts"><dt>Molar Mass</dt><dd>${formatMass(r.molarMass!)}</dd><dt>Type</dt><dd>${r.type}</dd><dt>State (at 25°C)</dt><dd>${r.state}</dd>${r.stateAtConditions ? `<dt>At ${r.stateAtConditions.temperature} °C</dt><dd>${r.stateAtConditions.state}</dd>` : ''}</dl>
   </div>
+  ${r.stateAtConditions?.note ? `<p class="muted tiny">${formatFormula(escapeHtml(r.stateAtConditions.note))}</p>` : ''}
   ${r.equation ? `<p class="equation" aria-label="Balanced equation">${formatFormula(r.equation)}</p>` : ''}
   <p class="basis">${basis}</p>
   ${renderAmounts(r)}${r.hazard ? `<p class="hazard ${r.hazard.level}" role="note"><b>⚠ ${r.hazard.level === 'danger' ? 'Danger' : 'Caution'}:</b> ${escapeHtml(r.hazard.note)}</p>` : ''}
@@ -64,8 +65,14 @@ function renderLabNotes(r: ReactionResult): string {
   const heat = h
     ? `<p class="heat ${h.kind}"><b>${h.kind === 'exothermic' ? '🔥 Exothermic: releases heat' : h.kind === 'endothermic' ? '❄ Endothermic: absorbs heat' : 'Almost no heat change'}</b>
        <br>${Math.abs(h.total)} kJ for ${formatFormula(r.equation ?? '')} (${Math.abs(h.perMoleProduct)} kJ per mole of ${formatFormula(r.formula!)}). Standard values at 25 °C.${h.forAmount !== undefined ? ` For your amounts: ${h.forAmount < 0 ? 'releases' : 'absorbs'} about ${formatAmount(Math.abs(h.forAmount))} kJ.` : ''}</p>` : '';
+  const s = r.stateAtConditions;
+  // The tabulated heat assumes the product is in its 25 °C state; say so when it isn't.
+  const caveat = h && s && s.state !== r.state && s.state !== 'Decomposes'
+    ? `<p class="muted tiny">The heat above assumes ${formatFormula(r.formula!)} as a ${(r.state ?? "").toLowerCase()}. At ${s.temperature} °C it is a ${s.state.toLowerCase()}, so the real heat released is different.</p>` : '';
+  const starts = r.reactantStates?.length
+    ? `<p class="muted">At ${r.temperature} °C: ${r.reactantStates.map((x) => `${x.name.toLowerCase()} is ${x.state === 'Decomposes' ? 'unstable' : `a ${x.state.toLowerCase()}`}`).join(', ')}.</p>` : '';
   const obs = r.observations?.length ? `<ul class="obs">${r.observations.map((o) => `<li>${escapeHtml(o)}</li>`).join('')}</ul>` : '';
   const rev = r.reversible ? '<p class="muted">This reaction is reversible (⇌): in practice only part of the reactants is converted at a time.</p>' : '';
-  return `<section class="panel"><h3>Lab notes</h3>${heat}${obs}${rev}
+  return `<section class="panel"><h3>Lab notes</h3>${heat}${caveat}${starts}${obs}${rev}
     <p class="muted tiny">For learning only. Observations and hazards are simplified; never attempt these reactions without supervision and proper safety equipment.</p></section>`;
 }
